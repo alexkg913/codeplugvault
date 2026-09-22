@@ -1,0 +1,32 @@
+{% extends "base.html" %}
+
+{% block title %}{{ radio.asset_label }} — {{ fleet.name }}{% endblock %}
+
+{% block content %}
+<p><a href="{% url 'radios:list' fleet_public_id=fleet.public_id %}">&larr; Radios</a></p>
+<h1>{{ radio.asset_label }}{% if radio.is_archived %} <span class="badge">archived</span>{% endif %}</h1>
+
+<dl>
+  <dt>Manufacturer</dt><dd>{{ radio.manufacturer|default:"—" }}</dd>
+  <dt>Model</dt><dd>{{ radio.model|default:"—" }}</dd>
+  <dt>Serial</dt><dd>{{ radio.serial|default:"—" }}</dd>
+  <dt>Radio ID</dt><dd>{{ radio.radio_id|default:"—" }}</dd>
+  <dt>Band</dt><dd>{{ radio.band|default:"—" }}</dd>
+  <dt>Firmware</dt><dd>{{ radio.firmware|default:"—" }}</dd>
+  <dt>Purpose</dt><dd>{{ radio.get_purpose_display|default:"—" }}</dd>
+  <dt>Status</dt><dd>{{ radio.get_status_display }}</dd>
+  <dt>Notes</dt><dd>{{ radio.notes|linebreaksbr|default:"—" }}</dd>
+</dl>
+
+{% if membership.can_edit %}
+  <p class="actions">
+    <a class="button" href="{% url 'radios:edit' fleet_public_id=fleet.public_id public_id=radio.public_id %}">Edit</a>
+    {% if not radio.is_archived %}
+      <form method="post" action="{% url 'radios:archive' fleet_public_id=fleet.public_id public_id=radio.public_id %}" class="inline-form">
+        {% csrf_token %}
+        <button type="submit">Archive</button>
+      </form>
+    {% endif %}
+  </p>
+{% endif %}
+{% endblock %}

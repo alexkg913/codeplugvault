@@ -1,0 +1,14 @@
+services:
+  db:
+    image: postgres:16
+    environment:
+      POSTGRES_DB: codeplug_vault
+      POSTGRES_USER: codeplug_vault
+      POSTGRES_PASSWORD: codeplug_vault
+    ports:
+      - "5432:5432"
+    volumes:
+      - codeplug_vault_db:/var/lib/postgresql/data
+
+volumes:
+  codeplug_vault_db:

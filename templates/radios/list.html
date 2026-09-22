@@ -1,0 +1,56 @@
+{% extends "base.html" %}
+
+{% block title %}Radios — {{ fleet.name }}{% endblock %}
+
+{% block content %}
+<p><a href="{% url 'fleets:detail' public_id=fleet.public_id %}">&larr; {{ fleet.name }}</a></p>
+<h1>Radios — {{ fleet.name }}</h1>
+
+<form method="get" class="filters">
+  <input type="text" name="asset_label" placeholder="Asset label" value="{{ filters.asset_label }}">
+  <input type="text" name="manufacturer" placeholder="Manufacturer" value="{{ filters.manufacturer }}">
+  <input type="text" name="model" placeholder="Model" value="{{ filters.model }}">
+  <select name="status">
+    <option value="">Any status</option>
+    {% for value, label in status_choices %}
+      <option value="{{ value }}" {% if filters.status == value %}selected{% endif %}>{{ label }}</option>
+    {% endfor %}
+  </select>
+  <select name="purpose">
+    <option value="">Any purpose</option>
+    {% for value, label in purpose_choices %}
+      <option value="{{ value }}" {% if filters.purpose == value %}selected{% endif %}>{{ label }}</option>
+    {% endfor %}
+  </select>
+  <label class="checkbox-label">
+    <input type="checkbox" name="archived" value="1" {% if show_archived %}checked{% endif %}>
+    Show archived
+  </label>
+  <button type="submit">Filter</button>
+</form>
+
+{% if membership.can_edit %}
+  <p><a class="button" href="{% url 'radios:create' fleet_public_id=fleet.public_id %}">+ Add radio</a></p>
+{% endif %}
+
+<ul class="radio-list">
+  {% for radio in radios %}
+    <li class="radio-card{% if radio.is_archived %} archived{% endif %}">
+      <a href="{% url 'radios:detail' fleet_public_id=fleet.public_id public_id=radio.public_id %}">
+        <strong>{{ radio.asset_label }}</strong> — {{ radio.manufacturer }} {{ radio.model }}
+      </a>
+      <div class="meta">{{ radio.get_status_display }}{% if radio.purpose %} · {{ radio.get_purpose_display }}{% endif %}</div>
+    </li>
+  {% empty %}
+    <li>No radios found.</li>
+  {% endfor %}
+</ul>
+
+{% if is_paginated %}
+  <nav class="pagination">
+    {% if page_obj.has_previous %}<a href="?page={{ page_obj.previous_page_number }}">Previous</a>{% endif %}
+    <span>Page {{ page_obj.number }} of {{ page_obj.paginator.num_pages }}</span>
+    {% if page_obj.has_next %}<a href="?page={{ page_obj.next_page_number }}">Next</a>{% endif %}
+  </nav>
+{% endif %}
+{% endblock %}

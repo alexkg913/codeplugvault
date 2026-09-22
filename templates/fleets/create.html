@@ -1,0 +1,13 @@
+{% extends "base.html" %}
+
+{% block title %}Create a fleet — Codeplug Vault{% endblock %}
+
+{% block content %}
+<h1>Create your fleet</h1>
+<p>A fleet is your private workspace for radios, batteries and configurations. Other members you invite later only see what's in their own fleet.</p>
+<form method="post">
+  {% csrf_token %}
+  {{ form.as_p }}
+  <button type="submit">Create fleet</button>
+</form>
+{% endblock %}

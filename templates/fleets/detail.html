@@ -1,0 +1,11 @@
+{% extends "base.html" %}
+
+{% block title %}{{ fleet.name }} — Codeplug Vault{% endblock %}
+
+{% block content %}
+<h1>{{ fleet.name }}</h1>
+<p class="meta">Your role: {{ membership.get_role_display }}</p>
+<ul class="fleet-nav">
+  <li><a href="{% url 'radios:list' fleet_public_id=fleet.public_id %}">Radio inventory</a></li>
+</ul>
+{% endblock %}
