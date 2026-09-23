@@ -1,0 +1,53 @@
+{% extends "base.html" %}
+
+{% block title %}Configurations — {{ fleet.name }}{% endblock %}
+
+{% block content %}
+<div class="page-header">
+  <div>
+    <h1>Configurations</h1>
+    <p class="subtitle">{{ fleet.name }}</p>
+  </div>
+  {% if membership.can_edit %}
+    <a class="btn btn-primary" href="{% url 'configurations:create' fleet_public_id=fleet.public_id %}">New configuration</a>
+  {% endif %}
+</div>
+
+<form method="get" class="filters">
+  <input type="text" name="name" placeholder="Name" value="{{ filters.name }}">
+  <label class="checkbox-label">
+    <input type="checkbox" name="archived" value="1" {% if show_archived %}checked{% endif %}>
+    Show archived
+  </label>
+  <button type="submit" class="btn btn-secondary btn-sm">Filter</button>
+</form>
+
+<ul class="row-list">
+  {% for configuration in configurations %}
+    <li>
+      <a class="row-link{% if configuration.is_archived %} is-archived{% endif %}" href="{% url 'configurations:detail' fleet_public_id=fleet.public_id public_id=configuration.public_id %}">
+        <span class="row-main">
+          <span class="row-label">{{ configuration.name }}</span>
+          <span class="row-detail">{{ configuration.versions.all|length }} version{{ configuration.versions.all|length|pluralize }}</span>
+        </span>
+        <span class="row-tags">
+          {% if configuration.is_archived %}<span class="badge badge-neutral">Archived</span>{% endif %}
+        </span>
+        <svg class="row-chevron" width="16" height="16" viewBox="0 0 16 16" fill="none" aria-hidden="true">
+          <path d="M6 4l4 4-4 4" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/>
+        </svg>
+      </a>
+    </li>
+  {% empty %}
+    <li><div class="empty-state">No configuration families yet.</div></li>
+  {% endfor %}
+</ul>
+
+{% if is_paginated %}
+  <nav class="pagination">
+    {% if page_obj.has_previous %}<a href="?page={{ page_obj.previous_page_number }}">Previous</a>{% endif %}
+    <span>Page {{ page_obj.number }} of {{ page_obj.paginator.num_pages }}</span>
+    {% if page_obj.has_next %}<a href="?page={{ page_obj.next_page_number }}">Next</a>{% endif %}
+  </nav>
+{% endif %}
+{% endblock %}

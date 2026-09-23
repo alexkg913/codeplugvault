@@ -1,0 +1,134 @@
+{% extends "base.html" %}
+
+{% block title %}{{ version.display_name }} — {{ version.configuration.name }}{% endblock %}
+
+{% block content %}
+<a class="back-link" href="{% url 'configurations:detail' fleet_public_id=fleet.public_id public_id=version.configuration.public_id %}">&larr; {{ version.configuration.name }}</a>
+
+<div class="page-header">
+  <div>
+    <h1 class="mono">{{ version.display_name }}</h1>
+    <p class="subtitle">
+      {% if version.created_by %}Created by {{ version.created_by }} · {% endif %}{{ version.created_at|date:"Y-m-d" }}
+    </p>
+  </div>
+  <span class="badge state-{{ version.state }}"><span class="badge-dot"></span>{{ version.get_state_display }}</span>
+</div>
+
+{% if version.release_notes %}
+  <dl class="spec-sheet">
+    <dt>Release notes</dt><dd>{{ version.release_notes|linebreaksbr }}</dd>
+  </dl>
+{% endif %}
+
+<div class="panel">
+  <div class="page-header" style="margin-bottom: var(--space-3);">
+    <h2 style="margin: 0;">Channels</h2>
+    {% if membership.can_edit and version.is_draft %}
+      <a class="btn btn-secondary btn-sm" href="{% url 'configurations:channel-create' fleet_public_id=fleet.public_id public_id=version.public_id %}">Add channel</a>
+    {% endif %}
+  </div>
+
+  {% if channels %}
+    <div class="table-scroll">
+      <table class="data-table">
+        <thead>
+          <tr>
+            <th>#</th>
+            <th>Zone</th>
+            <th>Name</th>
+            <th>Mode</th>
+            <th>RX</th>
+            <th>TX</th>
+            <th>DMR</th>
+            {% if membership.can_edit and version.is_draft %}<th class="col-actions">Actions</th>{% endif %}
+          </tr>
+        </thead>
+        <tbody>
+          {% for channel in channels %}
+            <tr>
+              <td class="mono">{{ channel.position }}</td>
+              <td>{{ channel.zone|default:"—" }}</td>
+              <td>{{ channel.name }}</td>
+              <td>{{ channel.get_mode_display }}</td>
+              <td class="mono">{{ channel.rx_frequency|default:"—" }}</td>
+              <td class="mono">{{ channel.tx_frequency|default:"—" }}</td>
+              <td class="mono">{% if channel.mode == "digital" %}CC{{ channel.color_code|default:"—" }}/TS{{ channel.timeslot|default:"—" }}{% else %}—{% endif %}</td>
+              {% if membership.can_edit and version.is_draft %}
+                <td class="col-actions">
+                  <a href="{% url 'configurations:channel-edit' fleet_public_id=fleet.public_id public_id=version.public_id channel_id=channel.pk %}">Edit</a>
+                  <form method="post" action="{% url 'configurations:channel-delete' fleet_public_id=fleet.public_id public_id=version.public_id channel_id=channel.pk %}" class="inline-form">
+                    {% csrf_token %}
+                    <button type="submit" class="btn-link">Delete</button>
+                  </form>
+                </td>
+              {% endif %}
+            </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  {% else %}
+    <p class="panel-empty">No channels entered yet.</p>
+  {% endif %}
+</div>
+
+<div class="panel">
+  <h2>Files</h2>
+  {% if attachments %}
+    <ul class="row-list" style="margin-bottom: var(--space-3);">
+      {% for attachment in attachments %}
+        <li>
+          <a class="row-link" href="{% url 'configurations:attachment-download' fleet_public_id=fleet.public_id public_id=version.public_id attachment_id=attachment.pk %}">
+            <span class="row-main">
+              <span class="row-label">{{ attachment.original_filename }}</span>
+              <span class="row-detail mono">{{ attachment.byte_size }} bytes · sha256:{{ attachment.sha256|slice:":12" }}…</span>
+            </span>
+          </a>
+        </li>
+      {% endfor %}
+    </ul>
+    <p class="helptext">Matching hashes mean matching bytes — not that two files program a radio the same way.</p>
+  {% else %}
+    <p class="panel-empty">No files attached yet.</p>
+  {% endif %}
+
+  {% if membership.can_edit and attachment_form %}
+    <form method="post" action="{% url 'configurations:attachment-upload' fleet_public_id=fleet.public_id public_id=version.public_id %}" enctype="multipart/form-data" style="margin-top: var(--space-3);">
+      {% csrf_token %}
+      {% include "partials/form_fields.html" with form=attachment_form %}
+      <div class="form-actions">
+        <button type="submit" class="btn btn-secondary">Upload</button>
+      </div>
+    </form>
+  {% endif %}
+</div>
+
+{% if other_versions %}
+  <div class="panel">
+    <h2>Compare</h2>
+    <ul class="row-list">
+      {% for other in other_versions %}
+        <li>
+          <a class="row-link" href="{% url 'configurations:version-compare' fleet_public_id=fleet.public_id from_id=version.public_id to_id=other.public_id %}">
+            <span class="row-main">
+              <span class="row-label">{{ version.display_name }} &rarr; {{ other.display_name }}</span>
+            </span>
+            <span class="badge state-{{ other.state }}"><span class="badge-dot"></span>{{ other.get_state_display }}</span>
+          </a>
+        </li>
+      {% endfor %}
+    </ul>
+  </div>
+{% endif %}
+
+{% if membership.can_edit and version.is_draft %}
+  <div class="form-actions">
+    <form method="post" action="{% url 'configurations:version-publish' fleet_public_id=fleet.public_id public_id=version.public_id %}" class="inline-form">
+      {% csrf_token %}
+      <button type="submit" class="btn btn-primary">Publish</button>
+    </form>
+  </div>
+  <p class="helptext">Publishing freezes this version's channels — create a new version for further changes.</p>
+{% endif %}
+{% endblock %}

@@ -43,6 +43,7 @@ class FleetDetailView(LoginRequiredMixin, View):
             "membership": membership,
             "radio_count": fleet.radios.filter(archived_at__isnull=True).count(),
             "battery_count": fleet.batteries.filter(archived_at__isnull=True).count(),
+            "configuration_count": fleet.configurations.filter(archived_at__isnull=True).count(),
             "repair_count": fleet.radios.filter(archived_at__isnull=True, status="repair").count(),
         }
         return render(request, "fleets/detail.html", context)

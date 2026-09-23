@@ -1,0 +1,63 @@
+{% extends "base.html" %}
+
+{% block title %}{{ configuration.name }} — {{ fleet.name }}{% endblock %}
+
+{% block content %}
+<a class="back-link" href="{% url 'configurations:list' fleet_public_id=fleet.public_id %}">&larr; Configurations</a>
+
+<div class="page-header">
+  <div>
+    <h1>{{ configuration.name }}</h1>
+    <p class="subtitle">{{ configuration.description|default:"No description yet." }}</p>
+  </div>
+  {% if configuration.is_archived %}<span class="badge badge-neutral">Archived</span>{% endif %}
+</div>
+
+{% if configuration.compatibility_notes %}
+  <dl class="spec-sheet">
+    <dt>Compatibility</dt><dd>{{ configuration.compatibility_notes|linebreaksbr }}</dd>
+  </dl>
+{% endif %}
+
+<div class="panel">
+  <div class="page-header" style="margin-bottom: var(--space-3);">
+    <h2 style="margin: 0;">Versions</h2>
+    {% if membership.can_edit and not configuration.is_archived %}
+      <a class="btn btn-secondary btn-sm" href="{% url 'configurations:version-create' fleet_public_id=fleet.public_id public_id=configuration.public_id %}">New version</a>
+    {% endif %}
+  </div>
+
+  <ul class="row-list">
+    {% for version in versions %}
+      <li>
+        <a class="row-link" href="{% url 'configurations:version-detail' fleet_public_id=fleet.public_id public_id=version.public_id %}">
+          <span class="row-main">
+            <span class="row-label">{{ version.display_name }}</span>
+            <span class="row-detail">{{ version.channels.count }} channel{{ version.channels.count|pluralize }}{% if version.created_by %} · by {{ version.created_by }}{% endif %}</span>
+          </span>
+          <span class="row-tags">
+            <span class="badge state-{{ version.state }}"><span class="badge-dot"></span>{{ version.get_state_display }}</span>
+          </span>
+          <svg class="row-chevron" width="16" height="16" viewBox="0 0 16 16" fill="none" aria-hidden="true">
+            <path d="M6 4l4 4-4 4" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/>
+          </svg>
+        </a>
+      </li>
+    {% empty %}
+      <li><div class="empty-state">No versions yet.</div></li>
+    {% endfor %}
+  </ul>
+</div>
+
+{% if membership.can_edit %}
+  <div class="form-actions">
+    <a class="btn btn-secondary" href="{% url 'configurations:edit' fleet_public_id=fleet.public_id public_id=configuration.public_id %}">Edit</a>
+    {% if not configuration.is_archived %}
+      <form method="post" action="{% url 'configurations:archive' fleet_public_id=fleet.public_id public_id=configuration.public_id %}" class="inline-form">
+        {% csrf_token %}
+        <button type="submit" class="btn btn-danger">Archive</button>
+      </form>
+    {% endif %}
+  </div>
+{% endif %}
+{% endblock %}

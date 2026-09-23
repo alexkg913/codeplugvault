@@ -1,0 +1,58 @@
+{% extends "base.html" %}
+
+{% block title %}Compare — {{ version_a.configuration.name }}{% endblock %}
+
+{% block content %}
+<a class="back-link" href="{% url 'configurations:version-detail' fleet_public_id=fleet.public_id public_id=version_a.public_id %}">&larr; {{ version_a.display_name }}</a>
+
+<div class="page-header">
+  <h1 class="mono">{{ version_a.display_name }} &rarr; {{ version_b.display_name }}</h1>
+</div>
+<p class="subtitle">{{ version_a.configuration.name }} — comparing manually entered channel data only; attached files aren't diffed.</p>
+
+<div class="diff-columns">
+  <div class="diff-group">
+    <h2>Added ({{ diff.added|length }})</h2>
+    {% if diff.added %}
+      <ul class="diff-list">
+        {% for channel in diff.added %}
+          <li class="diff-added">#{{ channel.position }} {{ channel.name }}{% if channel.zone %} · {{ channel.zone }}{% endif %}</li>
+        {% endfor %}
+      </ul>
+    {% else %}
+      <p class="diff-empty">None</p>
+    {% endif %}
+  </div>
+
+  <div class="diff-group">
+    <h2>Removed ({{ diff.removed|length }})</h2>
+    {% if diff.removed %}
+      <ul class="diff-list">
+        {% for channel in diff.removed %}
+          <li class="diff-removed">#{{ channel.position }} {{ channel.name }}{% if channel.zone %} · {{ channel.zone }}{% endif %}</li>
+        {% endfor %}
+      </ul>
+    {% else %}
+      <p class="diff-empty">None</p>
+    {% endif %}
+  </div>
+
+  <div class="diff-group">
+    <h2>Changed ({{ diff.changed|length }})</h2>
+    {% if diff.changed %}
+      <ul class="diff-list">
+        {% for entry in diff.changed %}
+          <li class="diff-changed">
+            <div>#{{ entry.position }} {{ entry.before.name }}{% if entry.after.name != entry.before.name %} &rarr; {{ entry.after.name }}{% endif %}</div>
+            <div class="field-diff-fields">{{ entry.changed_fields|join:", " }}</div>
+          </li>
+        {% endfor %}
+      </ul>
+    {% else %}
+      <p class="diff-empty">None</p>
+    {% endif %}
+  </div>
+</div>
+
+<p class="subtitle">{{ diff.unchanged_count }} channel{{ diff.unchanged_count|pluralize }} unchanged.</p>
+{% endblock %}

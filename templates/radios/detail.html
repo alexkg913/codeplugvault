@@ -63,6 +63,49 @@
 </div>
 
 <div class="panel">
+  <h2>Configuration</h2>
+  {% if current_programming_record %}
+    <div class="battery-current">
+      <div>
+        <a class="battery-current-id mono" href="{% url 'configurations:version-detail' fleet_public_id=fleet.public_id public_id=current_programming_record.version.public_id %}">{{ current_programming_record.version.configuration.name }} {{ current_programming_record.version.display_name }}</a>
+        <div class="battery-current-meta">Programmed {{ current_programming_record.programmed_at|date:"Y-m-d H:i" }}{% if current_programming_record.recorded_by %} · recorded by {{ current_programming_record.recorded_by }}{% endif %}</div>
+      </div>
+    </div>
+  {% else %}
+    <p class="panel-empty">No programming recorded yet. Selecting a version below only records that it was programmed once submitted — it isn't proof by itself.</p>
+  {% endif %}
+
+  {% if membership.can_edit and programming_form %}
+    <form method="post" action="{% url 'programming-create' fleet_public_id=fleet.public_id public_id=radio.public_id %}">
+      {% csrf_token %}
+      {% include "partials/form_fields.html" with form=programming_form %}
+      <div class="form-actions">
+        <button type="submit" class="btn btn-secondary">Record programming</button>
+      </div>
+      {% if not programming_form.version.field.queryset.exists %}
+        <p class="helptext">No published configuration versions in this fleet yet.</p>
+      {% endif %}
+    </form>
+  {% endif %}
+
+  {% if programming_records %}
+    <h3 style="margin-top: var(--space-4); font-size: 0.875rem;">History</h3>
+    <ul class="timeline">
+      {% for record in programming_records %}
+        <li>
+          <div class="timeline-date">{{ record.programmed_at|date:"Y-m-d H:i" }}</div>
+          <div class="timeline-title">
+            <a href="{% url 'configurations:version-detail' fleet_public_id=fleet.public_id public_id=record.version.public_id %}">{{ record.version.configuration.name }} {{ record.version.display_name }}</a>
+            {% if record.recorded_by %} <span class="row-detail">— recorded by {{ record.recorded_by }}</span>{% endif %}
+          </div>
+          {% if record.note %}<div class="timeline-note">{{ record.note }}</div>{% endif %}
+        </li>
+      {% endfor %}
+    </ul>
+  {% endif %}
+</div>
+
+<div class="panel">
   <h2>Maintenance</h2>
   {% if maintenance_events %}
     <ul class="timeline">

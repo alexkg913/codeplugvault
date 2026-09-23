@@ -1,0 +1,20 @@
+{% extends "base.html" %}
+
+{% block title %}New version — {{ configuration.name }}{% endblock %}
+
+{% block content %}
+<div class="page-narrow" style="margin: 0 auto;">
+  <a class="back-link" href="{% url 'configurations:detail' fleet_public_id=fleet.public_id public_id=configuration.public_id %}">&larr; {{ configuration.name }}</a>
+  <h1>New version</h1>
+  <p class="subtitle">Starts as a draft. Add channels, then publish when it's ready — published content can't be edited in place.</p>
+  <div class="form-panel">
+    <form method="post">
+      {% csrf_token %}
+      {% include "partials/form_fields.html" %}
+      <div class="form-actions">
+        <button type="submit" class="btn btn-primary">Create draft</button>
+      </div>
+    </form>
+  </div>
+</div>
+{% endblock %}

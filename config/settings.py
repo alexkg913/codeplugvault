@@ -24,6 +24,7 @@ INSTALLED_APPS = [
     "django.contrib.staticfiles",
     "apps.fleets",
     "apps.radios",
+    "apps.configurations",
 ]
 
 MIDDLEWARE = [
@@ -83,6 +84,30 @@ USE_TZ = True
 STATIC_URL = "static/"
 STATICFILES_DIRS = [BASE_DIR / "static"]
 STATIC_ROOT = BASE_DIR / "staticfiles"
+
+# Deliberately NOT MEDIA_ROOT/MEDIA_URL: version attachments (codeplug files) are
+# private by default and are only ever served through an authenticated, fleet-scoped
+# download view (apps.configurations.views.VersionAttachmentDownloadView), never from
+# a public URL. Files on disk are named by a random storage key; the user-facing
+# original filename lives only in the database. See README "Model & role rules".
+PRIVATE_MEDIA_ROOT = BASE_DIR / "private_storage"
+
+# Placeholder allowlist/size cap for vendor codeplug exports and supporting docs.
+# The brief flags this as an open question to revisit with real users once we know
+# which vendor tools/extensions people actually export from.
+ATTACHMENT_ALLOWED_EXTENSIONS = {
+    ".zip",
+    ".bin",
+    ".ctb",
+    ".rdt",
+    ".dat",
+    ".xml",
+    ".csv",
+    ".json",
+    ".txt",
+    ".pdf",
+}
+ATTACHMENT_MAX_BYTES = 25 * 1024 * 1024  # 25 MB
 
 DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
 

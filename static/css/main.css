@@ -413,6 +413,17 @@ a:hover {
   font-size: 0.8125rem;
 }
 
+.btn-link {
+  background: none;
+  border: none;
+  padding: 0;
+  color: var(--status-retired-text);
+  text-decoration: underline;
+  cursor: pointer;
+  font: inherit;
+  font-size: 0.75rem;
+}
+
 .btn[disabled] {
   opacity: 0.5;
   cursor: not-allowed;
@@ -977,3 +988,129 @@ textarea:focus {
     display: none;
   }
 }
+
+/* Data table: channel snapshots -- genuinely tabular, many columns */
+.table-scroll {
+  overflow-x: auto;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-md);
+  margin-bottom: var(--space-4);
+}
+
+.data-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 0.8125rem;
+  background: var(--surface);
+}
+
+.data-table th,
+.data-table td {
+  padding: 0.5rem 0.65rem;
+  text-align: left;
+  white-space: nowrap;
+  border-bottom: 1px solid var(--border);
+}
+
+.data-table th {
+  color: var(--text-muted);
+  font-weight: 600;
+  font-size: 0.75rem;
+}
+
+.data-table tbody tr:last-child td {
+  border-bottom: none;
+}
+
+.data-table td.mono {
+  font-size: 0.8125rem;
+}
+
+.data-table .col-actions {
+  text-align: right;
+}
+
+.data-table .col-actions a,
+.data-table .col-actions button {
+  font-size: 0.75rem;
+}
+
+/* Version state + diff */
+.state-draft {
+  background: var(--surface-sunken);
+  color: var(--text-muted);
+}
+.state-draft .badge-dot {
+  background: var(--text-faint);
+}
+
+.state-published {
+  background: var(--status-active-bg);
+  color: var(--status-active-text);
+}
+.state-published .badge-dot {
+  background: var(--status-active-dot);
+}
+
+.diff-columns {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(14rem, 1fr));
+  gap: var(--space-4);
+  margin-bottom: var(--space-5);
+}
+
+.diff-group h2 {
+  font-size: 0.9375rem;
+}
+
+.diff-list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-md);
+  overflow: hidden;
+}
+
+.diff-list li {
+  padding: 0.55rem var(--space-3);
+  font-size: 0.8125rem;
+}
+
+.diff-list li + li {
+  border-top: 1px solid var(--border);
+}
+
+.diff-added {
+  background: var(--status-active-bg);
+  color: var(--status-active-text);
+}
+
+.diff-removed {
+  background: var(--status-retired-bg);
+  color: var(--status-retired-text);
+}
+
+.diff-changed {
+  background: var(--status-repair-bg);
+  color: var(--status-repair-text);
+}
+
+.diff-empty {
+  padding: 0.55rem var(--space-3);
+  font-size: 0.8125rem;
+  color: var(--text-muted);
+}
+
+.field-diff-fields {
+  font-weight: 600;
+}
+
+.field-diff-values {
+  display: block;
+  margin-top: 0.15rem;
+  font-family: var(--font-mono);
+  font-size: 0.75rem;
+  opacity: 0.9;
+}
+

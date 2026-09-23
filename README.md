@@ -6,7 +6,9 @@ managing a handful of radios from a phone at the track.
 
 See `Codeplug_Vault_Project_Brief.md` for the full product brief and milestone plan.
 This README covers what's actually implemented so far: **Milestone 0** (foundation),
-**Milestone 1** (radio inventory), and **Milestone 2** (batteries and maintenance).
+**Milestone 1** (radio inventory), **Milestone 2** (batteries and maintenance), and
+**Milestone 3** (configuration vault: versions, channels, file attachments, programming
+records).
 
 ## Stack
 
@@ -67,13 +69,14 @@ container on every push/PR.
 This is the short design-decisions record the project brief asks for, kept close to the
 code so it stays accurate. Update it as the model evolves.
 
-**Tenancy.** Every domain record (`Radio`, and everything added in later milestones)
-belongs to exactly one `Fleet`. There is no cross-fleet visibility, ever. Access is
-never inferred from a submitted `fleet_id` — every fleet-scoped view resolves the fleet
-from the URL and re-checks the caller's `Membership` server-side on every request
-(`apps/radios/permissions.py:FleetScopedMixin`). A user who isn't an active member of a
-fleet gets a 404 on that fleet's pages, not a 403 — this avoids confirming a fleet's
-existence to people outside it.
+**Tenancy.** Every domain record (`Radio`, `Battery`, `Configuration`, and everything
+under it) belongs to exactly one `Fleet`. There is no cross-fleet visibility, ever.
+Access is never inferred from a submitted `fleet_id` — every fleet-scoped view resolves
+the fleet from the URL and re-checks the caller's `Membership` server-side on every
+request (`apps/fleets/mixins.py:FleetScopedMixin`, shared by the radios, batteries and
+configurations apps). A user who isn't an active member of a fleet gets a 404 on that
+fleet's pages, not a 403 — this avoids confirming a fleet's existence to people outside
+it.
 
 **Roles.** `Membership.role` is one of `owner`, `editor`, `viewer`. Owners and editors
 can mutate fleet records; viewers can only read. Role checks happen on every mutating
@@ -114,11 +117,55 @@ reads as a swap rather than an error. Cross-fleet pairings raise `CrossFleetErro
 the form's battery choices are scoped to the current fleet, so a forged battery id from
 another fleet never validates in the first place.
 
-**Maintenance events are append-only** in this milestone: a radio's timeline can be
-added to but not edited or deleted through the UI (only via the Django admin). Full
-correction semantics (an audited edit history) are a Milestone 3+ concern per the brief.
+**Maintenance events are append-only**: a radio's timeline can be added to but not
+edited or deleted through the UI (only via the Django admin). Full correction semantics
+(an audited edit history) remain a later concern per the brief.
+
+**Published version content is frozen.** `ConfigurationVersion.state` is `draft` or
+`published`. While a version is a draft, its channel snapshots can be added, edited and
+deleted; once published (`apps/configurations/services.publish_version`), all channel
+mutation views reject the request and bounce back to the version page with an
+explanation (`apps.configurations.views.DraftOnlyMixin`) — the only way to make further
+changes is to create a new version. Version *numbers* are assigned sequentially by the
+server (`services.create_version`, under a row lock on the parent `Configuration` to
+avoid a race between two concurrent "new version" clicks), never entered by hand, so
+they can't collide. Recording that a radio was programmed only accepts *published*
+versions as a target — the whole point of publishing is to freeze the content a radio
+could actually have been programmed with, so a draft isn't a valid target.
+
+**Channel comparison treats `position` as identity, not display order.** The brief asks
+implementers to decide whether reordering channels alone counts as a change, and to test
+that decision. `ChannelSnapshot.position` stands for the channel's actual memory slot in
+the radio, so here it's both the stable key used to match a channel across two versions
+*and* meaningful content: if two channels swap which position they occupy, that shows up
+as a change at both positions, not as a no-op reorder (see the docstring on
+`ChannelSnapshot` and `apps/configurations/comparison.py`, tested in
+`test_comparison.py::test_swapping_which_channel_occupies_a_position_counts_as_a_change`).
+Comparison only ever looks at entered channel fields — it never touches attached vendor
+files, so two versions with byte-identical attachments but different channel data (or
+vice versa) are never conflated.
+
+**Attachments are private by design, not by convention.** Files live in
+`PRIVATE_MEDIA_ROOT` (`private_storage/`, gitignored), which is never wired to
+`MEDIA_URL`/`STATIC_URL` — there is no public path to a stored file at all, only the
+authenticated, fleet-scoped `VersionAttachmentDownloadView`. Each file is saved under a
+random `storage_key`; the uploader's original filename lives only in the database and is
+what's sent back as the download's `Content-Disposition` filename. The SHA-256 checksum
+is computed by streaming the upload in chunks (never loading the whole file into memory
+at once) *before* anything is written to disk, and extension/size are validated before
+that too (`apps/configurations/services.store_attachment`). If the database write fails
+after the file was already written, the file is deleted in the same operation — a
+version is never left pointing at a file that isn't actually there. A matching hash
+between two attachments means the bytes are identical; it says nothing about whether the
+two files would program a radio the same way, and the UI says so next to the hash.
+Uploads are restricted to a small placeholder extension allowlist and a 25 MB cap
+(`settings.ATTACHMENT_ALLOWED_EXTENSIONS` / `ATTACHMENT_MAX_BYTES`) — the brief flags the
+real answer here as an open question for actual users of actual vendor tools, so this is
+a deliberately conservative placeholder, not a researched limit.
 
 ## What's next
 
-Milestone 3 (configuration families, versions, channel snapshots, file attachments, and
-programming records) is the next planned milestone and is **not** implemented yet.
+Milestone 4 (hosted alpha: managed Postgres, real private object storage in place of
+local disk, HTTPS, production settings, backups and a tested restore) is the next
+planned milestone and is **not** implemented yet. Provisioning anything is explicitly
+out of scope until the owner asks for it.

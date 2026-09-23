@@ -42,6 +42,7 @@
       <div class="segmented">
         <a href="{% url 'radios:list' fleet_public_id=fleet.public_id %}" class="{% if active_tab == 'radios' %}active{% endif %}">Radios</a>
         <a href="{% url 'batteries:list' fleet_public_id=fleet.public_id %}" class="{% if active_tab == 'batteries' %}active{% endif %}">Batteries</a>
+        <a href="{% url 'configurations:list' fleet_public_id=fleet.public_id %}" class="{% if active_tab == 'configurations' %}active{% endif %}">Configs</a>
       </div>
     </div>
   {% endif %}

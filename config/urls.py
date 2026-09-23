@@ -3,6 +3,8 @@ from django.contrib.auth import views as auth_views
 from django.urls import include, path
 from django.views.generic import RedirectView
 
+from apps.configurations.views import ProgrammingRecordCreateView
+
 urlpatterns = [
     path("admin/", admin.site.urls),
     path(
@@ -15,4 +17,10 @@ urlpatterns = [
     path("fleets/", include("apps.fleets.urls")),
     path("fleets/<uuid:fleet_public_id>/radios/", include("apps.radios.urls")),
     path("fleets/<uuid:fleet_public_id>/batteries/", include("apps.radios.battery_urls")),
+    path("fleets/<uuid:fleet_public_id>/configurations/", include("apps.configurations.urls")),
+    path(
+        "fleets/<uuid:fleet_public_id>/radios/<uuid:public_id>/programming/",
+        ProgrammingRecordCreateView.as_view(),
+        name="programming-create",
+    ),
 ]

@@ -5,8 +5,7 @@ from django.db import models
 from django.utils import timezone
 
 from apps.fleets.models import Fleet
-
-from .querysets import ArchivableQuerySet
+from apps.fleets.querysets import ArchivableQuerySet
 
 
 class Radio(models.Model):

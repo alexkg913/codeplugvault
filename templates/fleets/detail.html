@@ -17,6 +17,10 @@
     <span class="stat-label">tracked batteries</span>
   </div>
   <div class="stat">
+    <span class="stat-value">{{ configuration_count }}</span>
+    <span class="stat-label">configuration families</span>
+  </div>
+  <div class="stat">
     <span class="stat-value{% if repair_count %} warn{% endif %}">{{ repair_count }}</span>
     <span class="stat-label">in repair</span>
   </div>
@@ -30,6 +34,10 @@
   <a class="tile-link" href="{% url 'batteries:list' fleet_public_id=fleet.public_id %}">
     <span class="tile-title">Battery inventory</span>
     <span class="tile-meta">Track condition and see what's assigned where</span>
+  </a>
+  <a class="tile-link" href="{% url 'configurations:list' fleet_public_id=fleet.public_id %}">
+    <span class="tile-title">Configuration vault</span>
+    <span class="tile-meta">Channel snapshots, versions and codeplug files</span>
   </a>
 </div>
 {% endblock %}

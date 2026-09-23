@@ -6,6 +6,7 @@ __pycache__/
 db.sqlite3
 staticfiles/
 media/
+private_storage/
 .pytest_cache/
 .ruff_cache/
 *.egg-info/

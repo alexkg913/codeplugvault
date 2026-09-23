@@ -5,9 +5,11 @@ from django.utils import timezone
 from django.views import View
 from django.views.generic import CreateView, DetailView, ListView, UpdateView
 
+from apps.configurations.forms import ProgrammingRecordForm
+from apps.fleets.mixins import FleetScopedMixin
+
 from .forms import BatteryAssignForm, BatteryForm, MaintenanceEventForm, RadioForm
 from .models import Battery, Radio
-from .permissions import FleetScopedMixin
 from .services import CrossFleetError, assign_battery, end_assignment
 
 
@@ -65,9 +67,14 @@ class RadioDetailView(FleetScopedMixin, DetailView):
         ctx["active_tab"] = self.active_tab
         ctx["current_assignment"] = self.object.current_battery_assignment()
         ctx["maintenance_events"] = self.object.maintenance_events.select_related("recorded_by")
+        ctx["programming_records"] = self.object.programming_records.select_related(
+            "version__configuration", "recorded_by"
+        )
+        ctx["current_programming_record"] = ctx["programming_records"].first()
         if self.membership.can_edit:
             ctx["battery_assign_form"] = BatteryAssignForm(fleet=self.fleet)
             ctx["maintenance_form"] = MaintenanceEventForm(fleet=self.fleet, radio=self.object)
+            ctx["programming_form"] = ProgrammingRecordForm(fleet=self.fleet, radio=self.object)
         return ctx
 
 
