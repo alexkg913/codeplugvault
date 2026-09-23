@@ -99,6 +99,7 @@ ATTACHMENT_ALLOWED_EXTENSIONS = {
     ".zip",
     ".bin",
     ".ctb",
+    ".xctb",  # newer Motorola CPS codeplug export format
     ".rdt",
     ".dat",
     ".xml",

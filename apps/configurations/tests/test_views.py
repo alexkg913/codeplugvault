@@ -370,6 +370,20 @@ def test_editor_can_upload_and_download_attachment_with_correct_hash(client, sce
     assert "codeplug.ctb" in resp["Content-Disposition"]
 
 
+def test_upload_accepts_xctb_extension(client, scenario):
+    client.force_login(scenario["editor"])
+    upload = SimpleUploadedFile(
+        "codeplug.xctb", b"newer motorola cps export", content_type="application/octet-stream"
+    )
+    resp = client.post(
+        attachment_upload_url(scenario["fleet"], scenario["draft_version"]), {"file": upload}
+    )
+    assert resp.status_code == 302
+    assert VersionAttachment.objects.filter(
+        version=scenario["draft_version"], original_filename="codeplug.xctb"
+    ).exists()
+
+
 def test_upload_rejects_disallowed_extension(client, scenario):
     client.force_login(scenario["owner"])
     upload = SimpleUploadedFile("virus.exe", b"x", content_type="application/octet-stream")
