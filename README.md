@@ -5,14 +5,16 @@ codeplug configurations) for small teams — built around the needs of racing sp
 managing a handful of radios from a phone at the track.
 
 See `Codeplug_Vault_Project_Brief.md` for the full product brief and milestone plan.
-This README covers what's actually implemented so far: **Milestone 0** (foundation) and
-**Milestone 1** (radio inventory).
+This README covers what's actually implemented so far: **Milestone 0** (foundation),
+**Milestone 1** (radio inventory), and **Milestone 2** (batteries and maintenance).
 
 ## Stack
 
 - Python 3.12, Django 5.2 (LTS)
 - PostgreSQL (including for local development, via Docker Compose)
-- Server-rendered Django templates, no frontend framework
+- Server-rendered Django templates, no frontend framework, no web fonts — the whole UI
+  is a single hand-written stylesheet (`static/css/main.css`) on the system font stack,
+  so there's nothing to download before the page can paint
 - pytest / pytest-django, ruff, black
 
 ## Local setup
@@ -97,11 +99,26 @@ default inventory list excludes archived radios; a filter toggle shows them, and
 archived radio's detail page and edit history remain reachable directly.
 
 **Duplicate asset labels.** `asset_label` must be unique within a fleet (enforced by a
-`UniqueConstraint` and re-checked in `RadioForm.clean_asset_label`, since the DB
-constraint alone doesn't catch it when the form excludes `fleet` as a field). The same
-label is fine in a different fleet.
+`UniqueConstraint` and re-checked in `RadioForm.clean_asset_label` / `BatteryForm.clean_asset_label`,
+since the DB constraint alone doesn't catch it when the form excludes `fleet` as a
+field). The same label is fine in a different fleet.
+
+**Battery assignment is a swap, not a pointer.** There's no mutable "current battery"
+field on `Radio`. Instead, `BatteryAssignment` rows form a full history, and at most one
+row per battery (and per radio) may be active (`ended_at IS NULL`) at a time — enforced
+by partial `UniqueConstraint`s at the database level, not just in application code.
+`apps/radios/services.assign_battery` is the only path that creates a new assignment: it
+ends whichever assignment is currently active for the battery *and* whichever is active
+for the radio in the same transaction, so assigning a battery that's already elsewhere
+reads as a swap rather than an error. Cross-fleet pairings raise `CrossFleetError`, and
+the form's battery choices are scoped to the current fleet, so a forged battery id from
+another fleet never validates in the first place.
+
+**Maintenance events are append-only** in this milestone: a radio's timeline can be
+added to but not edited or deleted through the UI (only via the Django admin). Full
+correction semantics (an audited edit history) are a Milestone 3+ concern per the brief.
 
 ## What's next
 
-Milestone 2 (optional battery tracking, assignment history, and a maintenance timeline
-on the radio page) is the next planned milestone and is **not** implemented yet.
+Milestone 3 (configuration families, versions, channel snapshots, file attachments, and
+programming records) is the next planned milestone and is **not** implemented yet.

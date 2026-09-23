@@ -3,9 +3,33 @@
 {% block title %}{{ fleet.name }} — Codeplug Vault{% endblock %}
 
 {% block content %}
-<h1>{{ fleet.name }}</h1>
-<p class="meta">Your role: {{ membership.get_role_display }}</p>
-<ul class="fleet-nav">
-  <li><a href="{% url 'radios:list' fleet_public_id=fleet.public_id %}">Radio inventory</a></li>
-</ul>
+<div class="page-header">
+  <h1>{{ fleet.name }}</h1>
+</div>
+
+<div class="stat-board">
+  <div class="stat">
+    <span class="stat-value">{{ radio_count }}</span>
+    <span class="stat-label">active radios</span>
+  </div>
+  <div class="stat">
+    <span class="stat-value">{{ battery_count }}</span>
+    <span class="stat-label">tracked batteries</span>
+  </div>
+  <div class="stat">
+    <span class="stat-value{% if repair_count %} warn{% endif %}">{{ repair_count }}</span>
+    <span class="stat-label">in repair</span>
+  </div>
+</div>
+
+<div class="section-links">
+  <a class="tile-link" href="{% url 'radios:list' fleet_public_id=fleet.public_id %}">
+    <span class="tile-title">Radio inventory</span>
+    <span class="tile-meta">Search, filter, and check current battery &amp; maintenance status</span>
+  </a>
+  <a class="tile-link" href="{% url 'batteries:list' fleet_public_id=fleet.public_id %}">
+    <span class="tile-title">Battery inventory</span>
+    <span class="tile-meta">Track condition and see what's assigned where</span>
+  </a>
+</div>
 {% endblock %}

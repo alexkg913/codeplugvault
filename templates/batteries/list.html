@@ -1,32 +1,24 @@
 {% extends "base.html" %}
 
-{% block title %}Radios — {{ fleet.name }}{% endblock %}
+{% block title %}Batteries — {{ fleet.name }}{% endblock %}
 
 {% block content %}
 <div class="page-header">
   <div>
-    <h1>Radios</h1>
+    <h1>Batteries</h1>
     <p class="subtitle">{{ fleet.name }}</p>
   </div>
   {% if membership.can_edit %}
-    <a class="btn btn-primary" href="{% url 'radios:create' fleet_public_id=fleet.public_id %}">Add radio</a>
+    <a class="btn btn-primary" href="{% url 'batteries:create' fleet_public_id=fleet.public_id %}">Add battery</a>
   {% endif %}
 </div>
 
 <form method="get" class="filters">
   <input type="text" name="asset_label" placeholder="Asset label" value="{{ filters.asset_label }}">
-  <input type="text" name="manufacturer" placeholder="Manufacturer" value="{{ filters.manufacturer }}">
-  <input type="text" name="model" placeholder="Model" value="{{ filters.model }}">
-  <select name="status">
-    <option value="">Any status</option>
-    {% for value, label in status_choices %}
-      <option value="{{ value }}" {% if filters.status == value %}selected{% endif %}>{{ label }}</option>
-    {% endfor %}
-  </select>
-  <select name="purpose">
-    <option value="">Any purpose</option>
-    {% for value, label in purpose_choices %}
-      <option value="{{ value }}" {% if filters.purpose == value %}selected{% endif %}>{{ label }}</option>
+  <select name="condition">
+    <option value="">Any condition</option>
+    {% for value, label in condition_choices %}
+      <option value="{{ value }}" {% if filters.condition == value %}selected{% endif %}>{{ label }}</option>
     {% endfor %}
   </select>
   <label class="checkbox-label">
@@ -37,18 +29,22 @@
 </form>
 
 <ul class="row-list">
-  {% for radio in radios %}
+  {% for battery in batteries %}
+    {% with assignment=battery.current_assignment %}
     <li>
-      <a class="row-link{% if radio.is_archived %} is-archived{% endif %}" href="{% url 'radios:detail' fleet_public_id=fleet.public_id public_id=radio.public_id %}">
+      <a class="row-link{% if battery.is_archived %} is-archived{% endif %}" href="{% url 'batteries:detail' fleet_public_id=fleet.public_id public_id=battery.public_id %}">
         <span class="row-main">
-          <span class="row-label">{{ radio.asset_label }}</span>
-          <span class="row-detail">{{ radio.manufacturer }} {{ radio.model }}{% if radio.purpose %} · {{ radio.get_purpose_display }}{% endif %}</span>
+          <span class="row-label">{{ battery.asset_label }}</span>
+          <span class="row-detail">
+            {{ battery.maker }} {{ battery.model }}{% if battery.capacity %} · {{ battery.capacity }}{% endif %}
+            {% if assignment %} · on {{ assignment.radio.asset_label }}{% endif %}
+          </span>
         </span>
         <span class="row-tags">
-          {% if radio.is_archived %}
+          {% if battery.is_archived %}
             <span class="badge badge-neutral">Archived</span>
           {% else %}
-            <span class="badge status-{{ radio.status }}"><span class="badge-dot"></span>{{ radio.get_status_display }}</span>
+            <span class="badge condition-{{ battery.condition }}"><span class="badge-dot"></span>{{ battery.get_condition_display }}</span>
           {% endif %}
         </span>
         <svg class="row-chevron" width="16" height="16" viewBox="0 0 16 16" fill="none" aria-hidden="true">
@@ -56,8 +52,9 @@
         </svg>
       </a>
     </li>
+    {% endwith %}
   {% empty %}
-    <li><div class="empty-state">No radios match these filters yet.</div></li>
+    <li><div class="empty-state">No batteries match these filters yet.</div></li>
   {% endfor %}
 </ul>
 

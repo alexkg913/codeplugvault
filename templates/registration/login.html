@@ -3,14 +3,20 @@
 {% block title %}Sign in — Codeplug Vault{% endblock %}
 
 {% block content %}
-<h1>Sign in</h1>
-{% if form.errors %}
-  <p class="error">Your username and password didn't match. Please try again.</p>
-{% endif %}
-<form method="post">
-  {% csrf_token %}
-  {{ form.as_p }}
-  <input type="hidden" name="next" value="{{ next }}">
-  <button type="submit">Sign in</button>
-</form>
+<div class="page-narrow" style="margin: 0 auto;">
+  <h1>Sign in</h1>
+  {% if form.errors %}
+    <p class="error-text">Your username and password didn't match. Please try again.</p>
+  {% endif %}
+  <div class="form-panel">
+    <form method="post">
+      {% csrf_token %}
+      {% include "partials/form_fields.html" %}
+      <input type="hidden" name="next" value="{{ next }}">
+      <div class="form-actions">
+        <button type="submit" class="btn btn-primary">Sign in</button>
+      </div>
+    </form>
+  </div>
+</div>
 {% endblock %}

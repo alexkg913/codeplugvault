@@ -7,21 +7,46 @@
   <link rel="stylesheet" href="{% static 'css/main.css' %}">
 </head>
 <body>
-  <header class="site-header">
-    <a class="brand" href="{% url 'fleets:home' %}">Codeplug Vault</a>
-    <nav>
+  <a class="skip-link" href="#main">Skip to content</a>
+
+  <header class="topbar">
+    <a class="brand" href="{% url 'fleets:home' %}">
+      <svg width="20" height="20" viewBox="0 0 20 20" fill="none" aria-hidden="true">
+        <circle cx="10" cy="10" r="2.1" fill="currentColor"/>
+        <path d="M5.8 14.2a6 6 0 0 1 0-8.4" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/>
+        <path d="M14.2 5.8a6 6 0 0 1 0 8.4" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/>
+        <path d="M3.3 16.7a9.6 9.6 0 0 1 0-13.4" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" opacity="0.55"/>
+        <path d="M16.7 3.3a9.6 9.6 0 0 1 0 13.4" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" opacity="0.55"/>
+      </svg>
+      Codeplug Vault
+    </a>
+    <nav class="topbar-nav">
       {% if user.is_authenticated %}
-        <span class="current-user">{{ user }}</span>
+        <span class="topbar-user">{{ user }}</span>
         <form action="{% url 'logout' %}" method="post" class="inline-form">
           {% csrf_token %}
-          <button type="submit">Sign out</button>
+          <button type="submit" class="btn btn-secondary btn-sm">Sign out</button>
         </form>
       {% else %}
-        <a href="{% url 'login' %}">Sign in</a>
+        <a class="btn btn-primary btn-sm" href="{% url 'login' %}">Sign in</a>
       {% endif %}
     </nav>
   </header>
-  <main>
+
+  {% if fleet %}
+    <div class="fleet-bar">
+      <div class="fleet-bar-identity">
+        <a href="{% url 'fleets:detail' public_id=fleet.public_id %}">{{ fleet.name }}</a>
+        {% if membership %}<span class="role-tag">{{ membership.get_role_display }}</span>{% endif %}
+      </div>
+      <div class="segmented">
+        <a href="{% url 'radios:list' fleet_public_id=fleet.public_id %}" class="{% if active_tab == 'radios' %}active{% endif %}">Radios</a>
+        <a href="{% url 'batteries:list' fleet_public_id=fleet.public_id %}" class="{% if active_tab == 'batteries' %}active{% endif %}">Batteries</a>
+      </div>
+    </div>
+  {% endif %}
+
+  <main id="main" class="page">
     {% if messages %}
       <ul class="messages">
         {% for message in messages %}

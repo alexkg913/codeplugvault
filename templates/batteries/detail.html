@@ -1,0 +1,58 @@
+{% extends "base.html" %}
+
+{% block title %}{{ battery.asset_label }} — {{ fleet.name }}{% endblock %}
+
+{% block content %}
+<a class="back-link" href="{% url 'batteries:list' fleet_public_id=fleet.public_id %}">&larr; Batteries</a>
+
+<div class="page-header">
+  <div>
+    <h1 class="mono">{{ battery.asset_label }}</h1>
+    <p class="subtitle">{{ battery.maker }} {{ battery.model }}</p>
+  </div>
+  {% if battery.is_archived %}
+    <span class="badge badge-neutral">Archived</span>
+  {% else %}
+    <span class="badge condition-{{ battery.condition }}"><span class="badge-dot"></span>{{ battery.get_condition_display }}</span>
+  {% endif %}
+</div>
+
+<dl class="spec-sheet">
+  <dt>Serial</dt><dd class="mono">{{ battery.serial|default:"—" }}</dd>
+  <dt>Chemistry</dt><dd>{{ battery.chemistry|default:"—" }}</dd>
+  <dt>Capacity</dt><dd>{{ battery.capacity|default:"—" }}</dd>
+  <dt>Notes</dt><dd>{{ battery.notes|linebreaksbr|default:"—" }}</dd>
+</dl>
+
+<div class="panel">
+  <h2>Assignment history</h2>
+  {% if assignments %}
+    <ul class="timeline">
+      {% for assignment in assignments %}
+        <li>
+          <div class="timeline-date">{{ assignment.started_at|date:"Y-m-d" }}{% if assignment.ended_at %} &rarr; {{ assignment.ended_at|date:"Y-m-d" }}{% else %} &rarr; current{% endif %}</div>
+          <div class="timeline-title">
+            <a class="mono" href="{% url 'radios:detail' fleet_public_id=fleet.public_id public_id=assignment.radio.public_id %}">{{ assignment.radio.asset_label }}</a>
+            {% if not assignment.ended_at %}<span class="badge status-active"><span class="badge-dot"></span>Active</span>{% endif %}
+          </div>
+          {% if assignment.note %}<div class="timeline-note">{{ assignment.note }}</div>{% endif %}
+        </li>
+      {% endfor %}
+    </ul>
+  {% else %}
+    <p class="panel-empty">Never been assigned to a radio.</p>
+  {% endif %}
+</div>
+
+{% if membership.can_edit %}
+  <div class="form-actions">
+    <a class="btn btn-secondary" href="{% url 'batteries:edit' fleet_public_id=fleet.public_id public_id=battery.public_id %}">Edit</a>
+    {% if not battery.is_archived %}
+      <form method="post" action="{% url 'batteries:archive' fleet_public_id=fleet.public_id public_id=battery.public_id %}" class="inline-form">
+        {% csrf_token %}
+        <button type="submit" class="btn btn-danger">Archive</button>
+      </form>
+    {% endif %}
+  </div>
+{% endif %}
+{% endblock %}

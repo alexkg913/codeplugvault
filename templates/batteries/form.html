@@ -1,10 +1,10 @@
 {% extends "base.html" %}
 
-{% block title %}{% if object %}Edit {{ object.asset_label }}{% else %}Add radio{% endif %} — {{ fleet.name }}{% endblock %}
+{% block title %}{% if object %}Edit {{ object.asset_label }}{% else %}Add battery{% endif %} — {{ fleet.name }}{% endblock %}
 
 {% block content %}
 <div class="page-narrow" style="margin: 0 auto;">
-  <h1>{% if object %}Edit {{ object.asset_label }}{% else %}Add a radio{% endif %}</h1>
+  <h1>{% if object %}Edit {{ object.asset_label }}{% else %}Add a battery{% endif %}</h1>
   <div class="form-panel">
     <form method="post">
       {% csrf_token %}

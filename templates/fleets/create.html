@@ -3,11 +3,17 @@
 {% block title %}Create a fleet — Codeplug Vault{% endblock %}
 
 {% block content %}
-<h1>Create your fleet</h1>
-<p>A fleet is your private workspace for radios, batteries and configurations. Other members you invite later only see what's in their own fleet.</p>
-<form method="post">
-  {% csrf_token %}
-  {{ form.as_p }}
-  <button type="submit">Create fleet</button>
-</form>
+<div class="page-narrow" style="margin: 0 auto;">
+  <h1>Create your fleet</h1>
+  <p class="subtitle">A fleet is your private workspace for radios and batteries. Anyone you invite later only sees what's in their own fleet.</p>
+  <div class="form-panel">
+    <form method="post">
+      {% csrf_token %}
+      {% include "partials/form_fields.html" %}
+      <div class="form-actions">
+        <button type="submit" class="btn btn-primary">Create fleet</button>
+      </div>
+    </form>
+  </div>
+</div>
 {% endblock %}

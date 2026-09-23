@@ -38,4 +38,11 @@ class FleetDetailView(LoginRequiredMixin, View):
         membership = get_active_membership(request.user, fleet)
         if membership is None:
             raise Http404
-        return render(request, "fleets/detail.html", {"fleet": fleet, "membership": membership})
+        context = {
+            "fleet": fleet,
+            "membership": membership,
+            "radio_count": fleet.radios.filter(archived_at__isnull=True).count(),
+            "battery_count": fleet.batteries.filter(archived_at__isnull=True).count(),
+            "repair_count": fleet.radios.filter(archived_at__isnull=True, status="repair").count(),
+        }
+        return render(request, "fleets/detail.html", context)

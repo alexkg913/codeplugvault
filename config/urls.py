@@ -14,4 +14,5 @@ urlpatterns = [
     path("", RedirectView.as_view(pattern_name="fleets:home"), name="index"),
     path("fleets/", include("apps.fleets.urls")),
     path("fleets/<uuid:fleet_public_id>/radios/", include("apps.radios.urls")),
+    path("fleets/<uuid:fleet_public_id>/batteries/", include("apps.radios.battery_urls")),
 ]

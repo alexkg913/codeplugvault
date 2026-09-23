@@ -3,14 +3,18 @@
 {% block title %}Your fleets — Codeplug Vault{% endblock %}
 
 {% block content %}
-<h1>Your fleets</h1>
+<div class="page-header">
+  <h1>Your fleets</h1>
+</div>
 <ul class="fleet-list">
   {% for membership in memberships %}
     <li>
-      <a href="{% url 'fleets:detail' public_id=membership.fleet.public_id %}">{{ membership.fleet.name }}</a>
-      <span class="meta">{{ membership.get_role_display }}</span>
+      <a href="{% url 'fleets:detail' public_id=membership.fleet.public_id %}">
+        {{ membership.fleet.name }}
+        <span class="role-tag">{{ membership.get_role_display }}</span>
+      </a>
     </li>
   {% endfor %}
 </ul>
-<p><a href="{% url 'fleets:create' %}">Create another fleet</a></p>
+<p style="margin-top: var(--space-4);"><a href="{% url 'fleets:create' %}">Create another fleet</a></p>
 {% endblock %}

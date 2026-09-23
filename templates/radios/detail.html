@@ -3,30 +3,101 @@
 {% block title %}{{ radio.asset_label }} — {{ fleet.name }}{% endblock %}
 
 {% block content %}
-<p><a href="{% url 'radios:list' fleet_public_id=fleet.public_id %}">&larr; Radios</a></p>
-<h1>{{ radio.asset_label }}{% if radio.is_archived %} <span class="badge">archived</span>{% endif %}</h1>
+<a class="back-link" href="{% url 'radios:list' fleet_public_id=fleet.public_id %}">&larr; Radios</a>
 
-<dl>
-  <dt>Manufacturer</dt><dd>{{ radio.manufacturer|default:"—" }}</dd>
-  <dt>Model</dt><dd>{{ radio.model|default:"—" }}</dd>
-  <dt>Serial</dt><dd>{{ radio.serial|default:"—" }}</dd>
-  <dt>Radio ID</dt><dd>{{ radio.radio_id|default:"—" }}</dd>
+<div class="page-header">
+  <div>
+    <h1 class="mono">{{ radio.asset_label }}</h1>
+    <p class="subtitle">{{ radio.manufacturer }} {{ radio.model }}</p>
+  </div>
+  {% if radio.is_archived %}
+    <span class="badge badge-neutral">Archived</span>
+  {% else %}
+    <span class="badge status-{{ radio.status }}"><span class="badge-dot"></span>{{ radio.get_status_display }}</span>
+  {% endif %}
+</div>
+
+<dl class="spec-sheet">
+  <dt>Serial</dt><dd class="mono">{{ radio.serial|default:"—" }}</dd>
+  <dt>Radio ID</dt><dd class="mono">{{ radio.radio_id|default:"—" }}</dd>
   <dt>Band</dt><dd>{{ radio.band|default:"—" }}</dd>
-  <dt>Firmware</dt><dd>{{ radio.firmware|default:"—" }}</dd>
+  <dt>Firmware</dt><dd class="mono">{{ radio.firmware|default:"—" }}</dd>
   <dt>Purpose</dt><dd>{{ radio.get_purpose_display|default:"—" }}</dd>
-  <dt>Status</dt><dd>{{ radio.get_status_display }}</dd>
   <dt>Notes</dt><dd>{{ radio.notes|linebreaksbr|default:"—" }}</dd>
 </dl>
 
+<div class="panel">
+  <h2>Battery</h2>
+  {% if current_assignment %}
+    <div class="battery-current">
+      <div>
+        <a class="battery-current-id mono" href="{% url 'batteries:detail' fleet_public_id=fleet.public_id public_id=current_assignment.battery.public_id %}">{{ current_assignment.battery.asset_label }}</a>
+        <div class="battery-current-meta">Assigned since {{ current_assignment.started_at|date:"Y-m-d" }}</div>
+      </div>
+      {% if membership.can_edit %}
+        <form method="post" action="{% url 'radios:unassign-battery' fleet_public_id=fleet.public_id public_id=radio.public_id %}" class="inline-form">
+          {% csrf_token %}
+          <button type="submit" class="btn btn-secondary btn-sm">Unassign</button>
+        </form>
+      {% endif %}
+    </div>
+  {% else %}
+    <p class="panel-empty">No battery currently assigned.</p>
+  {% endif %}
+
+  {% if membership.can_edit and battery_assign_form %}
+    <form method="post" action="{% url 'radios:assign-battery' fleet_public_id=fleet.public_id public_id=radio.public_id %}">
+      {% csrf_token %}
+      <div class="inline-fields">
+        <div class="field">
+          <label for="{{ battery_assign_form.battery.id_for_label }}">{{ current_assignment|yesno:"Replace,Assign" }} battery</label>
+          {{ battery_assign_form.battery }}
+        </div>
+        <button type="submit" class="btn btn-secondary">{{ current_assignment|yesno:"Replace,Assign" }}</button>
+      </div>
+      {% if battery_assign_form.battery.field.queryset.exists %}{% else %}
+        <p class="helptext">No active batteries in this fleet yet. <a href="{% url 'batteries:create' fleet_public_id=fleet.public_id %}">Add one</a>.</p>
+      {% endif %}
+    </form>
+  {% endif %}
+</div>
+
+<div class="panel">
+  <h2>Maintenance</h2>
+  {% if maintenance_events %}
+    <ul class="timeline">
+      {% for event in maintenance_events %}
+        <li>
+          <div class="timeline-date">{{ event.occurred_at|date:"Y-m-d" }}</div>
+          <div class="timeline-title">{{ event.get_kind_display }}{% if event.recorded_by %} <span class="row-detail">— logged by {{ event.recorded_by }}</span>{% endif %}</div>
+          {% if event.notes %}<div class="timeline-note">{{ event.notes }}</div>{% endif %}
+        </li>
+      {% endfor %}
+    </ul>
+  {% else %}
+    <p class="panel-empty">No maintenance logged yet.</p>
+  {% endif %}
+
+  {% if membership.can_edit and maintenance_form %}
+    <form method="post" action="{% url 'radios:maintenance-create' fleet_public_id=fleet.public_id public_id=radio.public_id %}">
+      {% csrf_token %}
+      {% include "partials/form_fields.html" with form=maintenance_form %}
+      <div class="form-actions">
+        <button type="submit" class="btn btn-secondary">Log event</button>
+      </div>
+    </form>
+  {% endif %}
+</div>
+
 {% if membership.can_edit %}
-  <p class="actions">
-    <a class="button" href="{% url 'radios:edit' fleet_public_id=fleet.public_id public_id=radio.public_id %}">Edit</a>
+  <div class="form-actions">
+    <a class="btn btn-secondary" href="{% url 'radios:edit' fleet_public_id=fleet.public_id public_id=radio.public_id %}">Edit</a>
     {% if not radio.is_archived %}
       <form method="post" action="{% url 'radios:archive' fleet_public_id=fleet.public_id public_id=radio.public_id %}" class="inline-form">
         {% csrf_token %}
-        <button type="submit">Archive</button>
+        <button type="submit" class="btn btn-danger">Archive</button>
       </form>
     {% endif %}
-  </p>
+  </div>
 {% endif %}
 {% endblock %}
