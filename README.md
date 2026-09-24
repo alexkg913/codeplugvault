@@ -1,7 +1,6 @@
 # Codeplug Vault
 
-A private, fleet-scoped inventory app for tracking radios (and, later, batteries and
-codeplug configurations) for small teams — built around the needs of racing spotters
+A private, fleet-scoped inventory app for tracking radios, batteries and codeplug configurations for small teams — built around the needs of racing spotters
 managing a handful of radios from a phone at the track.
 
 See `Codeplug_Vault_Project_Brief.md` for the full product brief and milestone plan.
