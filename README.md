@@ -166,5 +166,4 @@ a deliberately conservative placeholder, not a researched limit.
 
 Milestone 4 (hosted alpha: managed Postgres, real private object storage in place of
 local disk, HTTPS, production settings, backups and a tested restore) is the next
-planned milestone and is **not** implemented yet. Provisioning anything is explicitly
-out of scope until the owner asks for it.
+planned milestone and is **not** implemented yet.
